@@ -1,0 +1,145 @@
+public class Main {
+    public static void main(String[] args) {
+        Frame frame = new Frame();
+        frame.setVisible(true);
+    }
+}
+
+import javax.swing.*;
+import java.awt.*;
+
+public class Frame extends JFrame {
+
+    Frame(){
+        setTitle("Ping Pong");
+        setDefaultCloseOperation(EXIT_ON_CLOSE);
+        setResizable(false);
+        setSize(600,600);
+        setBackground(Color.RED);
+        GamePanel gamePanel = new GamePanel(this.getWidth(),this.getHeight());
+        add(gamePanel);
+        pack();
+    }
+}
+
+
+import javax.swing.*;
+import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.awt.event.KeyListener;
+
+public class GamePanel extends JPanel implements ActionListener, KeyListener {
+    int BOARD_WIDTH;
+    int BOARD_HEIGHT;
+    int rectx = 200;
+    int recty = 500;
+    int rectWidth = 125;
+    int rectHeight = 25;
+    int rectSpeed = 5;
+    int ballSpeedx = 3;
+    int ballSpeedy = 3;
+    Timer timer;
+    boolean movingRight = false;
+    boolean movingLeft = false;
+    int ballx = 200;
+    int bally = 100;
+    int ballWidth = 10;
+    int ballHeight = 10;
+    int ballDiameter = ballWidth;
+    boolean gameOver = false;
+    JLabel gameOverLabel;
+
+    GamePanel(int boardWidth, int boardHeight) {
+        this.BOARD_WIDTH = boardWidth;
+        this.BOARD_HEIGHT = boardHeight;
+        setPreferredSize(new Dimension(this.BOARD_WIDTH, this.BOARD_HEIGHT));
+        setLayout(null);
+        setBackground(Color.black);
+        setFocusable(true);
+        addKeyListener(this);
+
+        gameOverLabel = new JLabel("GAME OVER");
+        gameOverLabel.setFont(new Font("dialog", Font.BOLD, 45));
+        gameOverLabel.setBounds(175,250,500, 100);
+        gameOverLabel.setForeground(Color.white);
+        gameOverLabel.setVisible(false);
+        add(gameOverLabel);
+
+        timer = new Timer(10, this);
+        timer.start();
+    }
+
+    public void paintComponent(Graphics g) {
+        super.paintComponent(g);
+        draw(g);
+    }
+
+    public void draw(Graphics g) {
+        g.setColor(Color.white);
+        g.fillRect(rectx, recty, rectWidth, rectHeight);
+
+        g.setColor(Color.WHITE);
+        g.fillOval(ballx, bally, ballWidth, ballHeight);
+    }
+
+    public void moveBall(){
+        ballx += ballSpeedx; // X koordinatını güncelle
+        bally += ballSpeedy; // Y koordinatını güncelle
+
+        // Eğer top duvara çarparsa yönünü değiştir (köşelerden sekme)
+        if (ballx <= 0 || ballx >= getWidth() - ballDiameter) {
+            ballSpeedx = -ballSpeedx; // Yön değiştir (x ekseni)
+        }
+        if (bally <= 0 || bally >= getHeight() - ballDiameter) {
+            ballSpeedy = -ballSpeedy; // Yön değiştir (y ekseni)
+        }
+    }
+
+    @Override
+    public void actionPerformed(ActionEvent e) {
+        if (movingRight == true && rectx+rectWidth<BOARD_WIDTH){
+            rectx += rectSpeed;
+        }
+        if (movingLeft == true && rectx>0){
+            rectx -= rectSpeed;
+        }
+        moveBall();
+
+
+        if (bally + ballDiameter > recty && ballx + ballDiameter > rectx && ballx < rectx + rectWidth){
+            ballSpeedy = -ballSpeedy;
+        }
+        if (bally > recty+rectHeight){
+            timer.stop();
+            gameOverLabel.setVisible(true);
+        }
+        repaint();
+    }
+
+    @Override
+    public void keyTyped(KeyEvent e) {
+
+    }
+
+    @Override
+    public void keyPressed(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT){
+            movingRight = true;
+        }
+        if (e.getKeyCode() == KeyEvent.VK_LEFT){
+            movingLeft = true;
+        }
+
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+        if (e.getKeyCode() == KeyEvent.VK_RIGHT){
+            movingRight = false;
+        }if (e.getKeyCode() == KeyEvent.VK_LEFT){
+            movingLeft = false;
+        }
+    }
+}
